@@ -41,7 +41,7 @@ class GalleryCard extends LitElement {
                     .cameraView=${"live"}
                   ></hui-image>` :
                 this._isImageExtension(this._currentResource().extension) ?
-                html`<img @click="${ev => this._popupImage(ev)}" src="${this._currentResource().url}"/>` :
+                html`<img @click="${ev => this._popupImage(ev)}" src="${this._getSizedURL(this._currentResource().url, "med")}"/>` :
                 html`<video controls ?loop=${this.config.video_loop} ?autoplay=${this.config.video_autoplay} src="${this._currentResource().url}" @loadedmetadata="${ev => this._videoMetadataLoaded(ev)}" @canplay="${ev => this._startVideo(ev)}"></video>`
               }
               <figcaption>${this._currentResource().caption} 
@@ -64,7 +64,7 @@ class GalleryCard extends LitElement {
                           .cameraView=${"live"}
                         ></hui-image>` :
                       this._isImageExtension(resource.extension) ?
-                      html`<img class="lzy_img" src="/local/community/gallery-card/placeholder.jpg" data-src="${resource.url}"/>` :
+                      html`<img class="lzy_img" src="/local/community/gallery-card/placeholder.jpg" data-src="${this._getSizedURL(resource.url, "thumb")}"/>` :
                         (this.config.video_preload ?? true) ?
                         html`<video preload="none" data-src="${resource.url}" @loadedmetadata="${ev => this._videoMetadataLoaded(ev)}" @canplay="${ev => this._downloadNextMenuVideo()}"></video>` :
                           html`<center><div class="lzy_img"><ha-icon id="play" icon="mdi:movie-play-outline"></ha-icon></div></center>`
@@ -251,13 +251,25 @@ class GalleryCard extends LitElement {
     }
   }
 
+  _getSizedURL(orgUrl, size="full") {
+    
+    let index = orgUrl.indexOf(".jpg");
+    if (size == "thumb") 
+      return orgUrl.substring(0, index) + "_thumb" + orgUrl.substring(index);
+    if (size == "med")
+      return orgUrl.substring(0, index) + "_med" + orgUrl.substring(index);
+    
+    return orgUrl;
+
+  }
+
   _loadImageForPopup() {
     var modal = this.shadowRoot.getElementById("imageModal");
     var modalImg = this.shadowRoot.getElementById("popupImage");
     var captionText = this.shadowRoot.getElementById("popupCaption");
 
     if (modal.style.display == "block") {
-      modalImg.src = this._currentResource().url;
+      modalImg.src = this._getSizedURL(this._currentResource().url, "full");
       captionText.innerHTML = this._currentResource().caption;
     }
   }
@@ -670,7 +682,7 @@ class GalleryCard extends LitElement {
       var fileDatePart = fileName;
       if (fileNameDateBegins && !isNaN(parseInt(fileNameDateBegins)))
         fileDatePart = fileDatePart.substring(parseInt(fileNameDateBegins) - 1);
-      console.log(fileDatePart);
+      // console.log(fileDatePart);
       if (fileNameFormat)
         date = dayjs(fileDatePart, fileNameFormat);
 
